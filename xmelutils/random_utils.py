@@ -110,37 +110,24 @@ def _generate_digit(weights: Optional[Sequence[float]]) -> Union[str, int]:
 def random_list(
     length: int = 10,
     *,
-    # Core generation parameters
     min_value: Union[int, float] = 0,
     max_value: Union[int, float] = 100,
     value_type: Literal['int', 'float', 'str', 'bool', 'mixed', 'letter', 'digit', 'custom'] = "int",
-    
-    # Uniqueness and sorting parameters
     unique: bool = False,
     sorted: bool = False,
-    
-    # Custom elements parameters
     elements: Optional[Sequence[Any]] = None,
     weights: Optional[Sequence[float]] = None,
-    
-    # String generation parameters
     string_length: int = 5,
     charset: Optional[str] = None,
     language: Literal['en', 'ru'] = "en",
     char_category: Optional[Literal['all', 'vowels', 'consonants', 'signs']] = None,
-    case: str = "mixed",  # 'lower', 'upper', 'mixed'
-    
-    # Nested structures parameters
+    case: str = "mixed",
     nested: bool = False,
     nested_depth: int = 1,
     nested_length: int = 3,
-    
-    # Additional control parameters
     generator: Optional[Callable[[int], Any]] = None,
     seed: Optional[int] = None,
-    
-    # Element processing
-    function: Optional[Callable[[Any], Any]] = None  # Lambda for element transformation
+    function: Optional[Callable[[Any], Any]] = None 
 ) -> List[Any]:
     """
     Generates a highly customizable random list with support for multiple languages and data types.
@@ -293,7 +280,7 @@ def random_list(
                 nested_depth=nested_depth-1,
                 nested_length=nested_length,
                 generator=generator,
-                function=function  # Pass processor to nested calls
+                function=function 
             )
             return function(nested_result) if function else nested_result
         generated = value_generators[value_type]()
@@ -322,19 +309,19 @@ def random_list(
     return result
 
 def random_matrix():
-    pass
+    print(f"Функция def {random_matrix.__name__}() ещё не реализована")
 
 def random_tensor():
-    pass
+    print(f"Функция def {random_tensor.__name__}() ещё не реализована")
 
 def random_tuple():
-    pass
+    print(f"Функция def {random_tuple.__name__}() ещё не реализована")
 
 def random_dict():
-    pass
+    print(f"Функция def {random_dict.__name__}() ещё не реализована")
 
 def random_set():
-    pass
+    print(f"Функция def {random_set.__name__}() ещё не реализована")
 
 def random_str():
-    pass
+    print(f"Функция def {random_str.__name__}() ещё не реализована")
