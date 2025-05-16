@@ -1,5 +1,7 @@
 from typing import Union
 
+STR_METHODS = ["many_count"]
+
 def many_count(
     text: str,
     patterns: Union[str, list[str]],

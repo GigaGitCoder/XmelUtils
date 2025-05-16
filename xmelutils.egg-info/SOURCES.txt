@@ -3,6 +3,7 @@ README.md
 setup.py
 tests/test_counting.py
 xmelutils/__init__.py
+xmelutils/random_utils.py
 xmelutils/str_utils.py
 xmelutils.egg-info/PKG-INFO
 xmelutils.egg-info/SOURCES.txt
