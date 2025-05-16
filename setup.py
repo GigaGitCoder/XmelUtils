@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="xmelutils",
-    version="0.0.2",
+    version="0.0.2.1",
     author="Igor Xmelnikov",
     author_email="egorkholkin2018@gmail.com",
     description=(
