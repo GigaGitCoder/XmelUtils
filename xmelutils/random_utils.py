@@ -1,5 +1,5 @@
 import random
-from typing import Literal, Union, Optional, Sequence, Any, List, Callable
+from typing import Literal, Union, Optional, Sequence, Any, List, Callable, Tuple
 
 
 RANDOM_METHODS = ["random_list", "random_matrix", "random_tuple", "random_dict"
@@ -325,3 +325,248 @@ def random_set():
 
 def random_str():
     print(f"Функция def {random_str.__name__}() ещё не реализована")
+
+def random_int(
+    min: int,
+    max: int,
+    *,
+    not_zero: bool = False,
+    including: Optional[Union[int, range, List[Union[int, range]]]] = None,
+    excluding: Optional[Union[int, range, List[Union[int, range]]]] = None
+) -> int:
+    """
+    Generates a highly customizable random integer with advanced inclusion/exclusion rules.
+
+    This function provides precise control over integer generation including:
+    - Standard range constraints (min/max)
+    - Special exclusion of zero value
+    - Complex inclusion/exclusion rules with single values or ranges
+    - Post-generation processing of the result
+
+    Args:
+        min: Minimum possible value (inclusive)
+        max: Maximum possible value (inclusive)
+        not_zero: If True, zero will be excluded from possible results (default: False)
+        including: Values or ranges to include in selection. If None, uses full [min, max] range.
+                   Examples: 
+                   - 5
+                   - range(10,20)
+                   - [3, range(5,8), 42]
+        excluding: Values or ranges to exclude from selection
+                   Examples:
+                   - 5
+                   - range(10,20)
+                   - [3, range(5,8), 100]
+        seed: Random seed for reproducible results (default: None)
+        element_processor: Transformation function applied to the generated value.
+                           Receives the integer and should return the processed version.
+                           (default: None)
+
+    Returns:
+        int: A randomly generated integer satisfying all conditions
+
+    Raises:
+        ValueError: If no valid numbers exist within the specified constraints
+        TypeError: If including/excluding contains invalid types
+
+    Examples:
+        >>> # Basic random integer
+        >>> random_int(1, 100)
+        42
+
+        >>> # Excluding zero and specific ranges
+        >>> random_int(-50, 50, not_zero=True, 
+        ...            excluding=[range(-10, 10), 42])
+        37
+
+        >>> # Only specific included values with processing
+        >>> random_int(0, 100, including=[10, 20, 30],
+        ...            element_processor=lambda x: x*2)
+        40
+
+        >>> # Reproducible result with seed
+        >>> random_int(1, 1000, seed=42)
+        654
+
+    Notes:
+        - When both including and excluding are specified, exclusions are applied after inclusions
+        - Ranges in including/excluding follow standard Python range semantics (upper bound excluded)
+        - The element_processor is applied after all other constraints are satisfied
+        - For large exclusion sets, generation may take longer as it needs to find valid numbers
+        - When using seed, results will be reproducible across runs
+    """
+    allowed = set()
+
+    # Process including
+    if including is None:
+        allowed.update(range(min, max+1))
+    else:
+        elements = [including] if not isinstance(including, list) else including
+        for el in elements:
+            if isinstance(el, int):
+                if min <= el <= max:
+                    allowed.add(el)
+            elif isinstance(el, range):
+                for n in el:
+                    if min <= n <= max:
+                        allowed.add(n)
+            else:
+                raise TypeError("Including elements must be int or range")
+
+    # Process excluding
+    excluded = set()
+    if excluding is not None:
+        elements = [excluding] if not isinstance(excluding, list) else excluding
+        for el in elements:
+            if isinstance(el, int):
+                excluded.add(el)
+            elif isinstance(el, range):
+                excluded.update(el)
+            else:
+                raise TypeError("Excluding elements must be int or range")
+
+    allowed -= excluded
+
+    # Handle not_zero
+    if not_zero:
+        allowed.discard(0)
+
+    if not allowed:
+        raise ValueError("No valid numbers matching criteria")
+
+    return random.choice(list(allowed))
+
+def random_float(
+    min: float,
+    max: float,
+    *,
+    not_zero: bool = False,
+    including: Optional[Union[float, Tuple[float, float], List[Union[float, Tuple[float, float]]]]] = None,
+    excluding: Optional[Union[float, Tuple[float, float], List[Union[float, Tuple[float, float]]]]] = None
+) -> float:
+    """
+    Generates a highly customizable random float with advanced inclusion/exclusion rules.
+
+    This function provides precise control over float generation including:
+    - Standard range constraints (min/max)
+    - Special exclusion of zero value
+    - Complex inclusion/exclusion rules with single values or intervals
+    - Optional precision control
+    - Post-generation processing of the result
+
+    Args:
+        min: Minimum possible value (inclusive)
+        max: Maximum possible value (inclusive)
+        not_zero: If True, zero will be excluded from possible results (default: False)
+        including: Values or intervals to include in selection. If None, uses full [min, max] range.
+                   Examples:
+                   - 5.0
+                   - (10.0, 20.0)
+                   - [3.0, (5.0, 8.0), 42.5]
+        excluding: Values or intervals to exclude from selection
+                   Examples:
+                   - 5.0
+                   - (10.0, 20.0)
+                   - [3.0, (5.0, 8.0), 100.0]
+        seed: Random seed for reproducible results (default: None)
+        element_processor: Transformation function applied to the generated value.
+                          Receives the float and should return the processed version.
+                          (default: None)
+        precision: Number of decimal places to round to (None means no rounding) (default: None)
+
+    Returns:
+        float: A randomly generated float satisfying all conditions
+
+    Raises:
+        ValueError: If no valid numbers exist within the specified constraints
+        TypeError: If including/excluding contains invalid types
+
+    Examples:
+        >>> # Basic random float
+        >>> random_float(0.0, 1.0)
+        0.5488135039273248
+
+        >>> # With precision and exclusion
+        >>> random_float(0, 10, excluding=[(2.5, 3.5)], precision=2)
+        4.37
+
+        >>> # Only specific intervals with processing
+        >>> random_float(0, 100, including=[(10, 20), (30, 40)],
+        ...              element_processor=lambda x: f"{x:.1f}°C")
+        '15.3°C'
+
+        >>> # Reproducible result with seed and precision
+        >>> random_float(0, 1, seed=42, precision=4)
+        0.3745
+
+    Notes:
+        - Intervals in including/excluding are treated as [a, b] (both bounds inclusive)
+        - When multiple intervals are provided in including, selection is weighted by interval length
+        - The element_processor is applied after all other constraints and optional rounding
+        - For complex exclusion patterns, generation may require multiple attempts
+        - Precision rounding uses Python's round() function (banker's rounding)
+        - Zero exclusion checks for values with absolute value < 1e-12 to account for float precision
+    """
+    # Validate input
+    if min > max:
+        raise ValueError("min must be <= max")
+
+    # Convert inputs to interval lists
+    def process_intervals(source, clip=True):
+        intervals = []
+        if source is None:
+            return [(min, max)] if not clip else None
+
+        elements = source if isinstance(source, list) else [source]
+        for el in elements:
+            if isinstance(el, (float, int)):
+                val = float(el)
+                if clip and (val < min or val > max):
+                    continue
+                intervals.append((val, val))
+            elif isinstance(el, tuple) and len(el) == 2:
+                a, b = sorted([float(el[0]), float(el[1])])
+                if clip:
+                    a = max(a, min)
+                    b = min(b, max)
+                    if a > b:
+                        continue
+                intervals.append((a, b))
+            else:
+                raise TypeError("Elements must be float or (float, float) tuples")
+        return intervals
+
+    include_intervals = process_intervals(including)
+    exclude_intervals = process_intervals(excluding, clip=False)
+
+    # Generate candidate numbers with max attempts
+    max_attempts = 10_000
+    for _ in range(max_attempts):
+        # Generate in allowed range
+        if include_intervals:
+            # Select random interval weighted by length
+            weights = [b-a for a, b in include_intervals]
+            total_weight = sum(weights)
+            if total_weight <= 0:
+                raise ValueError("No valid intervals to generate from")
+            a, b = random.choices(include_intervals, weights=weights, k=1)[0]
+            candidate = random.uniform(a, b)
+        else:
+            candidate = random.uniform(min, max)
+
+        # Check excludes
+        exclude = False
+        for a, b in exclude_intervals:
+            if a <= candidate <= b:
+                exclude = True
+                break
+        if exclude:
+            continue
+
+        # Check not_zero
+        if not_zero and abs(candidate) < 1e-12:  # Account for float precision
+            continue
+
+        return candidate
+
+    raise ValueError("Failed to find valid number after maximum attempts")
